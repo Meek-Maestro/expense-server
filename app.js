@@ -7,6 +7,7 @@ import {
   signupValidator,
   loginValidator,
 } from "./controllers/authController/validator.js";
+import { validateUser } from "./middleware/authToken.js";
 
 const app = express();
 

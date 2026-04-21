@@ -3,9 +3,9 @@ import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import { validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
+import { generateToken } from "../../lib/jwt.js";
 
 export async function SignUp(req, res) {
-
   const { first_name, last_name, email, password } = req.body;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -17,9 +17,10 @@ export async function SignUp(req, res) {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     const newUser = await pool.query(
       `INSERT INTO USERS (id, first_name, last_name, email, password) VALUES
-       ('${new_id}','${first_name}', '${last_name}', '${email}', '${hashedPassword}')`
+       ('${new_id}','${first_name}', '${last_name}', '${email}', '${hashedPassword}')`,
     );
-    res 
+
+    res
       .status(201)
       .json({ message: "Sign up successfully", data: newUser.rows });
   } catch (error) {
@@ -31,17 +32,28 @@ export async function SignUp(req, res) {
 
 export async function Login(req, res) {
   const { email, password } = req.body;
+  console.log({ email, password });
+
   const errors = validationResult(req);
+
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
+
   try {
     const user = await pool.query(`SELECT * FROM USERS WHERE email='${email}'`);
-    if (!user) return res.status(404).send("User not found");
+    if (user.rowCount == 0) return res.status(404).send("User not found");
+
     const authenticate = await bcrypt.compare(password, user.rows[0]?.password);
+
     if (!authenticate)
       return res.status(401).json({ message: "Invalid email or password" });
-    res.status(200).json({ message: "Login Successful" });
+
+    const token = generateToken(user.rows[0], res);
+
+    console.log(token);
+
+    res.status(200).json({ message: "Login Successful", token });
   } catch (error) {
     res
       .status(500)
@@ -50,6 +62,4 @@ export async function Login(req, res) {
   }
 }
 
-export async function getProfile(req, res){
- 
-}
+export async function getProfile(req, res) {}

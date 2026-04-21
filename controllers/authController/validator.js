@@ -14,7 +14,7 @@ export const signupValidator = [
   body("password")
     .isString()
     .notEmpty()
-    .isLength({ min: 4 })
+    .isLength({ min: 6 })
     .withMessage("Password must be more than 6 characters long"),
 ];
 
