@@ -22,6 +22,10 @@ const port = 3505;
 app.post("/signup", signupValidator, SignUp);
 app.post("/login", loginValidator, Login);
 
+app.get("/profile", validateUser, (req, res) => {
+  res.json({ user: req.user });
+});
+
 app.listen(port, () => {
   console.log(`Server is running in http://localhost:${port}`);
   // connect to database

@@ -1,10 +1,14 @@
-export async function validateToken(req, res, next){
-    const token = req.headers['token']
-    try {
-        if(!token) return res.status(404).send("No token")
-        if (token === "1234")
-        next()
-    } catch (error) {
-        res.status(400).send("Unauthorized")
-    }
+import jwt from "jsonwebtoken";
+
+export async function validateUser(req, res, next) {
+  const token = req.header("Authorization")?.split(" ")[1];
+  if (!token) throw new Error("No token provided");
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    throw new Error("Invalid or expired token");
+  }
 }
